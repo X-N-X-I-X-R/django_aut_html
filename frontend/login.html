@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 50px;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="register.html">register</a>
+  <a href="index.html">home</a>
+<div id="loginStatus">
+  <!-- Display login status here -->
+</div>
+<div class="container">
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required>
+    <br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    <br>
+    <label for="rememberMe">Remember Me:</label>
+    <input type="checkbox" id="rememberMe" name="rememberMe">
+    <br>
+    <button type="button" onclick="login()">Login</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+const login = async () => {
+  console.log('%cLogin button clicked', 'color: lightgreen; font-weight: bold;');
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const rememberMe = document.getElementById("rememberMe").checked;
+  const loginStatus = document.getElementById("loginStatus");
+
+  try {
+    console.log("--------------------");
+    console.log("%cSending login request to server",'color: yellow; font-weight: bold;');
+    const response = await axios.post("http://127.0.0.1:8000/login/", {
+      username: username,
+      password: password,
+    });
+    console.log("--------------------");
+    console.log("Response:", response);
+
+    // Instead of accessing user.username directly, you can display a message
+    console.log("%cLogin successful for username:",'color: lightgreen; font-weight: bold;', username);
+
+    const accessToken = response.data.access;
+    const refreshToken = response.data.refresh;
+
+    console.log("Access token:", accessToken);
+
+    // Update login status
+    loginStatus.textContent = "Login success";
+
+    // Save tokens to localStorage
+    localStorage.setItem("access_token", accessToken);
+    localStorage.setItem("refresh_token", refreshToken);
+
+    // Save rememberMe status to localStorage
+    if (rememberMe) {
+      localStorage.setItem("rememberMe", "true");
+      localStorage.setItem("username", username);
+    } else {
+      localStorage.removeItem("rememberMe");
+      localStorage.removeItem("username");
+    }
+  } catch (error) {
+    console.error("Error during login:", error);
+    // Update login status on error
+    loginStatus.textContent = "Login failed";
+    console.error("%cError during login:", "please check your username and password","color: red; font-weight: bold;");
+  }
+};
+
+// Auto-fill the form if "Remember Me" was checked
+const rememberMe = localStorage.getItem("rememberMe");
+if (rememberMe === "true") {
+  console.log("%cRemember me is clicked",'color: lightgreen; font-weight: bold;');
+  const username = localStorage.getItem("username");
+  document.getElementById("username").value = username;
+  document.getElementById("rememberMe").checked = true;
+}
+</script>
+
+</body>
+</html>
